@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+{#{% load  my_filter%}#}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>我爬电影养你啊</title>
+    <!--样式-->
+    <link rel="stylesheet" href="{% static 'base/css/bootstrap-3.3.7.min.css' %}">
+{#        <link rel="stylesheet" href="http://static1.mtime.cn/nodewww/2019051313312/css/common/public.css">#}
+    <link rel="stylesheet" href="{% static 'css/public.css' %}">
+{#                <link rel="stylesheet" href="http://static1.mtime.cn/nodewww/2019051313312/css/index/index.css">#}
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    <!--js脚本-->
+    <script src="{% static 'base/js/jQuery-3.4.1.js' %}"></script>
+
+    <script src="{% static 'base/js/bootstrap-3.3.7/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'base/js/npm.js' %}"></script>
+    <script src="{% static 'base/js/wow.min.js' %}"></script>
+    <script src="{% static 'base/js/jquery.min.js' %}"></script>
+    {#    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>#}
+    <script src="{% static 'js/common-index.js' %}"></script>
+    {#        <script src="http://static1.mtime.cn/nodewww/2019051313312/js/common/common-index.js"></script>#}
+
+    <script>
+        var api_server = "api-data-channel.jx.mtime-prd.com"
+            , extra_api_server = "web.channel.mtime.com"
+            , css_server = "static1.mtime.cn/nodewww"
+            , js_server = "static1.mtime.cn/nodewww"
+            , img_server = "img31.mtime.cn"
+            , img_proxyUrl = "http://img31.mtime.cn/get.ashx"
+            , server = "www.mtime.com"
+            , site_domain = ".mtime.com"
+            , site_domain_cn = ".mtime.cn"
+            , site_server = "www.mtime.com"
+            , rev = "/2019051313312"
+            , MT = "M18";
+    </script>
+
+    <style>
+        .navbar-brand > img {
+            display: inline;
+        }
+
+    </style>
+
+    {% block css %}
+
+    {% endblock %}
+</head>
+<body>
+<!--导航条开始-->
+<nav class="navbar navbar-inverse" style="background-color: #192332">
+    <div class="container-fluid">
+        <!--左侧跑马灯开始-->
+        <div class="navbar-header">
+            <button class="navbar-toggle" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <a class="navbar-brand" href="{% url 'index' %}" style="width: 250px">
+                <marquee behavior="scroll" direction="right">
+                    万佩佩的电影时光
+                </marquee>
+            </a>
+        </div>
+        <!--左侧跑马灯结束-->
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <!-- 中间索引开始 -->
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="{% url 'index' %}">首页<span class="sr-only">(current)</span></a></li>
+                <li><a href="#">排行榜</a></li>
+                <li><a href="#">影评</a></li>
+            </ul>
+            <form class="navbar-form navbar-left" action="{% url 'search' %}">
+                <div class="form-group">
+                    <input type="text" name="keywords" class="form-control" placeholder="想看啥">
+                </div>
+                <button type="submit" class="btn btn-default">搜索</button>
+            </form>
+            <ul class="nav navbar-nav" style="margin-left: 70px">
+                <li><a href="#"><b style="font-family: Tahoma,Arial;font-size: large">For people who love movies</b></a>
+                </li>
+            </ul>
+            <!-- 中间索引结束 -->
+
+            <!--右侧登录注册开始-->
+            <ul class="nav navbar-nav navbar-right">
+                <!--如果认证通过则显示用户的信息-->
+                {% if request.user.is_authenticated %}
+                    <li><a href="{% url 'users:userinfo' %}">{{ request.user.username }}</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                           aria-expanded="false">其他功能<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'users:userinfo' %}">个人中心</a></li>
+                            <li><a href="/logout/">注销</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li><a href="/login/">登录</a></li>
+                    <li><a href="/register/">注册</a></li>
+                {% endif %}
+            </ul>
+            <!--右侧登录注册结束-->
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<!--导航条结束-->
+
+<!--搜索、返回顶部开始-->
+<div class="mtimebar" data-hang="hangout">
+    <div title="搜索" class="searchbar" data-hang="search" style="display:none;"><b class="baron">搜索</b></div>
+    <div title="返回顶部" class="topbar" data-hang="backtop" style="display:none;"><b class="baron">返回顶部</b></div>
+</div>
+<!--搜索、返回顶部结束-->
+
+<!--轮播图开始-->
+<noscript></noscript>
+<div class="headslider slider-over" id="indexTopSlide" data-ride="carousel">
+    <a href="#indexTopSlide"
+       title="上一张" class="lastpic"
+       data-slide="prev"
+       data-pan="M18_Index_News_HeadImg_Prev"><i></i>
+    </a>
+    <a
+            href="#indexTopSlide" title="下一张" class="nextpic" data-slide="next"
+            data-pan="M18_Index_News_HeadImg_Next"><i></i>
+    </a>
+    <i data-target="#indexTopSlide" data-slide-to="0"
+       class="cur"></i>
+    <i data-target="#indexTopSlide"
+       data-slide-to="1"
+       class=""></i>
+    <i
+            data-target="#indexTopSlide" data-slide-to="2" class=""></i>
+    <i data-target="#indexTopSlide"
+       data-slide-to="3" class=""></i><i
+        data-target="#indexTopSlide" data-slide-to="4" class=""></i>
+    <dl>
+
+        <dd data-opacity="1" style="z-index:3;opacity:1;filter:alpha(opacity=100);">
+            <div class="over-a"
+                 style="background:url(http://img5.mtime.cn/mg/2019/06/23/090204.55663379.jpg) no-repeat right center;">
+                {#                 style="background:url('../海报图片/quqx.jpg') no-repeat right center;">#}
+                <a data-pan="M18_Index_fullScreen_2_1_0" class="arealink"
+                   href="" target="_blank"
+                   title="&quot;千与千寻&quot;为何成为宫崎骏巅峰？"></a></div>
+        </dd>
+        <dd data-opacity="0" style="z-index:1;opacity:0;filter:alpha(opacity=0);">
+            <div class="over-a"
+                 style="background:url(http://img5.mtime.cn/mg/2019/06/22/093002.56089863.jpg) no-repeat right center;">
+                <a data-pan="M18_Index_fullScreen_3_1_0" class="arealink"
+                   href="http://news.mtime.com/2019/06/22/1594240.html" target="_blank"
+                   title="基努·里维斯，又杀回来了"></a></div>
+        </dd>
+        <dd data-opacity="0" style="z-index:1;opacity:0;filter:alpha(opacity=0);">
+            <div class="over-a"
+                 style="background:url(http://img5.mtime.cn/mg/2019/06/21/093856.52847094.jpg) no-repeat right center;">
+                <a data-pan="M18_Index_fullScreen_4_1_0" class="arealink"
+                   href="http://news.mtime.com/2019/06/20/1594186.html" target="_blank"
+                   title="《玩具总动员》系列为何无法超越？"></a></div>
+        </dd>
+        <dd data-opacity="0" style="z-index:1;opacity:0;filter:alpha(opacity=0);">
+            <div class="over-a"
+                 style="background:url(http://img5.mtime.cn/mg/2019/06/21/202604.67221597.jpg) no-repeat right center;">
+                <a data-pan="M18_Index_fullScreen_5_1_0" class="arealink"
+                   href="http://news.mtime.com/2019/06/20/1594180.html" target="_blank"
+                   title="时光网实地探访“八百壮士”遗址"></a></div>
+        </dd>
+    </dl>
+    <div class="sliderdot" data-slidedot="dot">
+        <i data-target="#indexTopSlide" data-slide-to="0" class="cur"></i>
+        <i data-target="#indexTopSlide" data-slide-to="1" class=""></i>
+        <i data-target="#indexTopSlide" data-slide-to="2" class=""></i>
+        <i data-target="#indexTopSlide" data-slide-to="3" class=""></i>
+    </div>
+</div>
+<!--轮播图结束-->
+<br>
+<hr>
+
+<!--电影分类开始-->
+<div class="indexstruct" id="internet-online" data-plugin="imgLoad">
+    <div class="cinemaregion">
+        <div class="head-tab"><h4 class="customtitle"><span>分类</span></h4></div>
+        <!--分类标题tags开始-->
+        <dl class="cinemamenu" data-plugin="tab-nav">
+            {% for tag in tags %}
+                {% if forloop.counter == 1 %}
+                    <dd class="tag cur" tagid="{{ tag.id }}">{{ tag }}</dd>
+                {% else %}
+                    <dd class="tag" tagid="{{ tag.id }}">{{ tag }}</dd>
+                {% endif %}
+            {% endfor %}
+        </dl>
+        <!--分类标题tags结束-->
+        <a class="cmore" href="" data-pan="M18_Index_hotMovie_more" target="_blank" style="display: block;">更多</a>
+        <a class="cmore" style="display: none;" href="" data-pan="M18_Index_likedMovie_more">更多</a>
+        <!--分类主体开始-->
+        <div data-plugin="tab-box">
+            <div style="display: block;">
+                <div class="imgrolling online-list-wrap">
+                    <div class="shadowleft" style="display: block;"></div>
+                    <div class="shadowright" style="display: none;"></div>
+                    <a href="javascript:void(0);" class="last" title="上一屏" data-plugin="swiper-upbtn"
+                       data-pan="M18_TheaterIndex_Hotplay_Prev" style="display: block;"><i></i>
+                    </a>
+                    <a href="javascript:void(0);" class="next" title="下一屏" data-plugin="swiper-downbtn"
+                       data-pan="M18_TheaterIndex_Hotplay_Next" style="display: none;"><i></i>
+                    </a>
+                    <div class="imgrollinner">
+                        <ul id="tag-movie" class="online-list" style="width: 2060px; position: relative;">
+                            {#                            data-swiper-page="2">#}
+                            {% for movie in movies %}
+                                <li>
+                                    <div class="cinameimgout">
+                                        <a href="{% url 'play' movie.id %}" target="_blank" data-logdmg="hotMovie__1"
+                                           data-mvid="224984"
+                                           class="cinameimgitem showMovieBrief" data-pan="M18_Index_hotMovie_poster_1">
+                                            <img src="/media/{{ movie.logo }}" width="170" height="256">
+                                            <i class="moviegrade">{{ movie.star | floatformat:1 }}</i>
+                                            <i class="playicon"></i>
+                                        </a>
+                                    </div>
+                                    <h3>
+                                        <a href="{% url 'play' movie.id %}" target="_blank">{{ movie.title }}</a>
+                                    </h3>
+                                    <p class="btnticket">
+                                        <a class="btngreen" href="{% url 'play' movie.id %}" target="_blank"
+                                           data-pan="M18_Index_hotMovie_seeNow_5">在线观看</a>
+                                    </p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--分类主体结束-->
+    </div>
+</div>
+<!--电影分类结束-->
+
+<!--推荐指数开始-->
+<div class="indexstruct" id="internet-online" data-plugin="imgLoad">
+    <div class="cinemaregion">
+        <div class="head-tab"><h4 class="customtitle"><span>评分</span></h4></div>
+        <dl class="cinemamenu" data-plugin="tab-nav">
+            <dd class="grade cur" grade="9">9星神作</dd>
+            <dd class="grade" grade="8">8星高分</dd>
+            <dd class="grade" grade="7">7星普通</dd>
+            <dd class="grade" grade="6">6星一般</dd>
+            <dd class="grade" grade="5">消磨时光系列</dd>
+        </dl>
+        <a class="cmore" href="#" data-pan="M18_Index_hotMovie_more" target="_blank"
+           style="display: block;">更多</a><a class="cmore" style="display: none;" href="#"
+                                            data-pan="M18_Index_likedMovie_more">更多</a>
+
+        <div data-plugin="tab-box">
+            <div style="display: block;">
+                <div class="imgrolling online-list-wrap">
+                    <div class="shadowleft" style="display: block;"></div>
+                    <div class="shadowright" style="display: none;"></div>
+                    <a href="javascript:void(0);" class="last" title="上一屏" data-plugin="swiper-upbtn"
+                       data-pan="M18_TheaterIndex_Hotplay_Prev" style="display: block;"><i></i></a><a
+                        href="javascript:void(0);" class="next" title="下一屏" data-plugin="swiper-downbtn"
+                        data-pan="M18_TheaterIndex_Hotplay_Next" style="display: none;"><i></i></a>
+                    <div class="imgrollinner">
+                        <ul id="mark_movie" class="online-list" style="width: 2060px; position: relative;"
+                            data-swiper-page="2">
+                            {% for movie in movie_mark %}
+                                <li>
+                                    <div class="cinameimgout">
+                                        <a href="{% url 'play' movie.id %}" target="_blank" data-logdmg="hotMovie__1"
+                                           data-mvid="224984"
+                                           class="cinameimgitem showMovieBrief" data-pan="M18_Index_hotMovie_poster_1">
+                                            <img src="/media/{{ movie.logo }}" width="170" height="256">
+                                            <i class="moviegrade">{{ movie.star | floatformat:1 }}</i>
+                                            <i class="playicon"></i>
+                                        </a>
+                                    </div>
+                                    <h3>
+                                        <a href="{% url 'play' movie.id %}" target="_blank">{{ movie.title }}</a>
+                                    </h3>
+                                    <p class="btnticket">
+                                        <a class=" btngreen " href="" target="_blank"
+                                           data-pan="M18_Index_hotMovie_seeNow_5">在线观看</a>
+                                    </p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--推荐指数结束-->
+
+<!--上映时间开始-->
+<div class="indexstruct" id="internet-online" data-plugin="imgLoad">
+    <div class="cinemaregion">
+        <div class="head-tab"><h4 class="customtitle"><span>上映时间</span></h4></div>
+        <!--上映时间标题开始-->
+        <dl class="cinemamenu" data-plugin="tab-nav">
+            <dd class="release cur" ordering="-release_time">最新</dd>
+            <dd class="release" ordering="release_time">更早</dd>
+        </dl>
+        <!--上映时间标题结束-->
+        <a class="cmore" href="#" data-pan="M18_Index_hotMovie_more" target="_blank" style="display: block;">更多</a>
+        <a class="cmore" style="display: none;" href="#" data-pan="M18_Index_likedMovie_more">更多</a>
+        <!--上映时间主体开始-->
+        <div data-plugin="tab-box">
+            <div style="display: block;">
+                <div class="imgrolling online-list-wrap">
+                    <div class="shadowleft" style="display: block;"></div>
+                    <div class="shadowright" style="display: none;"></div>
+                    <a href="javascript:void(0);" class="last" title="上一屏" data-plugin="swiper-upbtn"
+                       data-pan="M18_TheaterIndex_Hotplay_Prev" style="display: block;"><i></i></a><a
+                        href="javascript:void(0);" class="next" title="下一屏" data-plugin="swiper-downbtn"
+                        data-pan="M18_TheaterIndex_Hotplay_Next" style="display: none;"><i></i></a>
+                    <div class="imgrollinner">
+                        <ul id="release-movie" class="online-list" style="width: 2060px; position: relative;">
+                            {% for movie in movie_time %}
+                                <li>
+                                    <div class="cinameimgout">
+                                        <a href="{% url 'play' movie.id %}" target="_blank" title=""
+                                           data-logdmg="hotMovie__1"
+                                           data-mvid="224984"
+                                           class="cinameimgitem showMovieBrief" data-pan="M18_Index_hotMovie_poster_1">
+                                            <img src="/media/{{ movie.logo }}" width="170" height="256" alt="">
+                                            <i class="moviegrade">{{ movie.star | floatformat:1 }}</i>
+                                            <i class="playicon">
+                                            </i>
+                                        </a>
+                                    </div>
+                                    <h3>
+                                        <a href="{% url 'play' movie.id %}" target="_blank"
+                                           data-pan="M18_Index_hotMovie_movieName_1">{{ movie.title }}
+                                        </a>
+                                    </h3>
+                                    <p style="color: #888;margin-top: 1px">上映时间：{{ movie.release_time }}</p>
+
+                                    <p class="btnticket">
+                                        <a class="btngreen" href="{% url 'play' movie.id %}" target="_blank"
+                                           data-pan="M18_Index_hotMovie_seeNow_1">在线观看</a>
+                                    </p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--上映主体结束-->
+    </div>
+</div>
+<!--上映时间结束-->
+
+<!--播放数量开始-->
+<div class="indexstruct" id="mborank" data-plugin="imgLoad">
+    <div class="cinemaregion">
+        <div class="head-tab"><h4 class="customtitle"><span>播放量</span></h4></div>
+        <!--播放量标题开始-->
+        <dl class="mbotab" data-plugin="tab-nav" style="display: block">
+            <dd class="playnums cur" ordering="-play_nums">由高到低</dd>
+            <dd class="playnums" ordering="play_nums">由低到高</dd>
+        </dl>
+        <!--播放量标题结束-->
+        <a class="cmore" href="#" target="_blank" data-pan="M18_Index_movieRank_more" style="display: block;">更多</a>
+        <a class="cmore" style="display: none;" target="_blank" href="" data-pan="M18_Index_movieRank_more">更多</a>
+        <!--播放量主体开始-->
+        <div data-plugin="tab-box" class="imgrolling">
+            <div style="display: block;">
+                <ul id="playnums_movie" class="mborlist" style="display: block;">
+                    {% for movie in movie_playnums %}
+                        <li class="mbor-item">
+                            <div class="moviepic">
+                                <a href="{% url 'play' movie.id %}" target="_blank" class="showMovieBrief"
+                                   data-logdmg="movieRank_domestic__1" data-mvid="11550"
+                                   data-pan="M18_Index_movieRank_domestic_poster_1">
+                                    <img src="/media/{{ movie.logo }}" width="185"
+                                         height="277">
+                                </a>
+                                <i class="moviegrade">{{ movie.star | floatformat:1 }}</i></div>
+                            <div class="text">
+                                <h3>
+                                    <a href="{% url 'play' movie.id %}" target="_blank"
+                                       data-pan="M18_Index_movieRank_domestic_title_1">{{ movie.title }}
+                                    </a>
+                                </h3>
+                                <p>上映时间：{{ movie.release_time }}</p>
+                                <p>播放量：{{ movie.play_nums }}</p>
+                                <p>时长：{{ movie.length }}</p>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--播放量主体结束-->
+
+</div>
+
+<!--播放数量结束-->
+
+<!--评论数量开始-->
+<div class="indexstruct" id="internet-online" data-plugin="imgLoad">
+    <div class="cinemaregion">
+        <div class="head-tab"><h4 class="customtitle"><span>评论数</span></h4></div>
+
+        <dl class="mbotab" data-plugin="tab-nav" style="display: block">
+            <dd class="comments cur" ordering="-comment_nums">由多到少</dd>
+            <dd class="comments" ordering="comment_nums">由少到多</dd>
+        </dl>
+        <a class="cmore" href="#" target="_blank" data-pan="M18_Index_movieRank_more" style="display: block;">更多</a>
+        <a class="cmore" style="display: none;" target="_blank" href="" data-pan="M18_Index_movieRank_more">更多</a>
+        <!--评论主体开始-->
+        <div data-plugin="tab-box" class="imgrolling" style="display: block;">
+            <div style="display: block;">
+                <ul id="moviecomments" class="mborlist" style="display: block;">
+                    {% for movie in movie_commentnums %}
+                        <li class="mbor-item">
+                            <div class="moviepic">
+                                <a href="{% url 'play' movie.id %}" target="_blank" class="showMovieBrief"
+                                   data-logdmg="movieRank_domestic__1" data-mvid="11550"
+                                   data-pan="M18_Index_movieRank_domestic_poster_1">
+                                    <img src="/media/{{ movie.logo }}" width="185" height="277">
+                                </a>
+                                <i class="moviegrade">{{ movie.star | floatformat:1 }}</i></div>
+                            <div class="text">
+                                <h3>
+                                    <a href="{% url 'play' movie.id %}" target="_blank"
+                                       data-pan="M18_Index_movieRank_domestic_title_1">{{ movie.title }}
+                                    </a>
+                                </h3>
+                                <p>评论数：{{ movie.comment_nums }}</p>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <!--评论主体开始-->
+    </div>
+    <!--评论数量结束-->
+</div>
+
+<!--底部开始-->
+<div class="footout"><span class="topline"></span>
+    <br>
+    <div class="fotlogo">
+        <marquee behavior="scroll" direction="right">
+            <dt><a href="#" title="Mtime时光网">Mtime时光网</a>
+        </marquee>
+        </dt>
+
+        <div class="db_foot"><p>
+            <h1>有任何问题请联系站长 @万佩佩</h1>
+            <span>不知道接不接的站长电话：15151979063   联系邮箱：616130272@qq.com</span><br/><span>上海万佩佩科技有限公司</span>Copyright
+            2006-2019 Mtime.com Inc. All rights reserved.<br/><a href="http://feature.mtime.com/help/icp.htm"
+                                                                 target="_blank">京ICP证050715号</a><a
+                    href="#" target="_blank"
+                    class="mr12">网络视听许可证0108265号</a><a
+                    href="#" target="_blank" class="mr12">网络文化经营许可证</a><a
+                    href="#" target="_blank"
+                    class="mr12">广播电视节目制作经营许可证(京)字第1435号</a><a
+                    href="#" target="_blank"
+                    class="beian_container"><span class="beian"></span><span>京公网安备：11010502032542号</span></a></p>
+
+
+            <script type="text/javascript">
+                window.indexCommonAd = {
+                    "todayhot": "<div class=\"tc  mb15\" style=\"cursor:pointer;\">\n<iframe  src=\"http://static1.mtime.cn/tg/16/2016_index_news_banner_1200x90.html\" width=\"1200\" height=\"90\" frameborder=\"0\" border=\"0\" marginwidth=\"0\" marginheight=\"0\" scrolling=\"no\" allowtransparency=\"true\"></iframe>\n</div>",
+                    "theaterhot": "<div class=\"tc  mb15\" style=\"margin-top:12px;\">\n<iframe  src=\"http://static1.mtime.cn/tg/2011/2016_index_mall_banner_1200x90.html\" width=\"1200\" height=\"90\" frameborder=\"0\" border=\"0\" marginwidth=\"0\" marginheight=\"0\" scrolling=\"no\" allowtransparency=\"true\"></iframe>\n</div>\n",
+                    "inetonline": "",
+                    "newrecmd": "",
+                    "movierevw": "",
+                    "mbor": "",
+                    "specrk": "",
+                    "mall": "",
+                    "findmr": "",
+                    "undrfoot": "<div class=\"tc  mb15\" style=\"padding-bottom:15px;\">\n<iframe  src=\"http://static1.mtime.cn/tg/2011/2016_index_footer_banner_1200x90.html.html\" width=\"1200\" height=\"90\" frameborder=\"0\" border=\"0\" marginwidth=\"0\" marginheight=\"0\" scrolling=\"no\" allowtransparency=\"true\"></iframe>\n</div>\n"
+                };
+            </script>
+            <script src="http://static1.mtime.cn/nodewww/2019051313312/js/index.js"></script>
+            <div style="display:none"></div>
+            <script type="text/javascript"></script>
+            <!-- 直播 CSS JS -->
+        </div>
+        <!--底部结束-->
+    </div>
+</div>
+<!--底部结束-->
+</body>
+
+<script>
+    // 分类发送请求
+    $('.tag').mouseover(function () {
+        let tagid = $(this).attr('tagid');
+        console.log(tagid);
+        $.ajax({
+            url: 'http://127.0.0.1:8888/movietag/',
+            type: 'get',
+            data: {
+                tag: tagid
+            },
+            success: function (response) {
+                $('#tag-movie').parent().parent().parent().css('display', 'block');
+                {#console.log(response);#}
+                $('#tag-movie').html('').css('width', '2060px');
+
+                for (movie of response) {
+                    let movie_tag = $(`<li>
+                        <div class="cinameimgout">
+                            <a href="/play/${movie.id}/" target="_blank" data-logdmg="hotMovie__1" data-mvid="224984"
+                               class="cinameimgitem showMovieBrief" data-pan="M18_Index_hotMovie_poster_1">
+                                <img src="${movie.logo}" width="170" height="256">
+                                <i class="moviegrade">${(movie.star).toFixed(1)}</i>
+                                <i class="playicon"></i>
+                            </a>
+                        </div>
+                        <h3>
+                            <a href="/play/${movie.id}/" target="_blank">${movie.title}</a>
+                        </h3>
+                        <p class="btnticket">
+                            <a class="btngreen" href="/play/${movie.id}/" target="_blank"
+                               data-pan="M18_Index_hotMovie_seeNow_5">在线观看</a>
+                        </p>
+                    </li>
+                    `);
+                    $('#tag-movie').append(movie_tag)
+                }
+            }
+        });
+    });
+
+    // 评分
+    $('.grade').mouseover(function () {
+        $this = $(this);
+        $.ajax({
+            url: 'http://127.0.0.1:8888/moviemark/',
+            data: {
+                star: $this.attr('grade')
+            },
+            success: function (response) {
+                $('#mark_movie').parent().parent().parent().css('display', 'block');
+                $('#mark_movie').css('width', '2060px');
+                li_list = $('#mark_movie').children();
+
+                for (movie of response.data) {
+                    let movie_mark = $(`<li>
+                                    <div class="cinameimgout">
+                                        <a href="/play/${movie.id}/" target="_blank" data-logdmg="hotMovie__1" data-mvid="224984"
+                                           class="cinameimgitem showMovieBrief" data-pan="M18_Index_hotMovie_poster_1">
+                                            <img src="${movie.logo}" width="170" height="256">
+                                            <i class="moviegrade">${(movie.star).toFixed(1)}</i>
+                                            <i class="playicon"></i>
+                                        </a>
+                                    </div>
+                                    <h3>
+                                        <a href="/play/${movie.id}/" target="_blank">${movie.title}</a>
+                                    </h3>
+                                    <p class="btnticket">
+                                        <a class=" btngreen " href="/play/${movie.id}/" target="_blank"
+                                           data-pan="M18_Index_hotMovie_seeNow_5">在线观看</a>
+                                    </p>
+                                </li>
+                    `);
+                    $('#mark_movie').append(movie_mark)
+                }
+                li_list.remove()
+            }
+
+        })
+    });
+
+    // 上映时间发送请求
+    $('.release').mouseover(function () {
+        //alert('111');
+        $this = $(this);
+        $.ajax({
+            url: 'http://127.0.0.1:8888/moviereleasetime/',
+            type: 'get',
+            data: {
+                ordering: $this.attr('ordering'),
+            },
+            success: function (response) {
+                //console.log(response.data);
+                //console.log(response.data);
+                $('#release-movie').parent().parent().parent().css('display', 'block');
+                $('#release-movie').html('').css('width', '2060px');
+                for (movie of response.data) {
+                    //console.log(movie);
+                    let movie_release_time = $(`<li>
+                        <div class="cinameimgout">
+                            <a href="/play/${movie.id}/" target="_blank" data-logdmg="hotMovie__1" data-mvid="224984"
+                               class="cinameimgitem showMovieBrief" data-pan="M18_Index_hotMovie_poster_1">
+                                <img src="${movie.logo}" width="170" height="256">
+                                <i class="moviegrade">${(movie.star).toFixed(1)}</i>
+                                <i class="playicon"></i>
+                            </a>
+                        </div>
+                        <h3>
+                            <a href="/play/${movie.id}/" target="_blank">${movie.title}</a>
+                        </h3>
+                            <p style="color: #888;margin-top: 1px">上映时间：${movie.release_time}</p>
+                        <p class="btnticket">
+                            <a class="btngreen" href="/play/${movie.id}/" target="_blank"
+                               data-pan="M18_Index_hotMovie_seeNow_5">在线观看</a>
+                        </p>
+                    </li>
+                    `);
+                    $('#release-movie').append(movie_release_time)
+                }
+            }
+        })
+    });
+
+    // 播放量发送请求
+    $('.playnums').mouseover(function () {
+        //alert('111');
+        $this = $(this);
+        $.ajax({
+            url: 'http://127.0.0.1:8888/movieplaynums/',
+            type: 'get',
+            data: {
+                ordering: $this.attr('ordering'),
+            },
+            success: function (response) {
+                //console.log(response.data);
+                $('#playnums_movie').parent().parent().css('display', 'block');
+                $('#playnums_movie').html('').css('width', '2060px');
+                for (movie of response.data) {
+                    let movie_playnums = $(`<li class="mbor-item">
+                            <div class="moviepic">
+                                <a href="/play/${movie.id}/" target="_blank" class="showMovieBrief"
+                                   data-logdmg="movieRank_domestic__1" data-mvid="11550"
+                                   data-pan="M18_Index_movieRank_domestic_poster_1">
+                                    <img src="${movie.logo}" width="185"
+                                         height="277">
+                                </a>
+                                <i class="moviegrade">${(movie.star).toFixed(1)}</i></div>
+                            <div class="text">
+                                <h3>
+                                    <a href="/play/${movie.id}/" target="_blank"
+                                       data-pan="M18_Index_movieRank_domestic_title_1">${movie.title}
+                                    </a>
+                                </h3>
+                                <p>上映时间：${movie.release_time}</p>
+                                <p>播放量：${movie.play_nums}</p>
+                                <p>时长：${movie.length}</p>
+                            </div>
+                        </li>`);
+                    $('#playnums_movie').append(movie_playnums)
+
+                }
+            }
+        })
+    });
+
+    // 评论
+    $('.comments').mouseover(function () {
+        //alert('111')
+        $this = $(this);
+        $.ajax({
+            url: 'http://127.0.0.1:8888/moviecomments/',
+            type: 'get',
+            data: {
+                ordering: $this.attr('ordering'),
+            },
+            success: function (response) {
+                {#$('#moviecomments').parent().parent().css('display', 'block');#}
+                $('#moviecomments').parent().css('display', 'block');
+                $('#moviecomments').html('').css('width', '2060px');
+                for (movie of response.data) {
+                    console.log(response.data);
+                    let movie_comments = $(`<li class="mbor-item">
+                            <div class="moviepic">
+                                <a href="/play/${movie.id}/" target="_blank" class="showMovieBrief"
+                                   data-logdmg="movieRank_domestic__1" data-mvid="11550"
+                                   data-pan="M18_Index_movieRank_domestic_poster_1">
+                                    <img src="${movie.logo}" width="185"
+                                         height="277">
+                                </a>
+                                <i class="moviegrade">${(movie.star).toFixed(1)}</i></div>
+                            <div class="text">
+                                <h3>
+                                    <a href="/play/${movie.id}/" target="_blank"
+                                       data-pan="M18_Index_movieRank_domestic_title_1">${movie.title}
+                                    </a>
+                                </h3>
+                                <p>评论数：${movie.comment_nums}</p>
+
+                            </div>
+                        </li>`);
+                    $('#moviecomments').append(movie_comments)
+                }
+            }
+        })
+    });
+
+
+</script>
+</html><!--expire:Thu Jan 01 1970 08:00:00 GMT+0800 (CST)-->

@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="container" style="margin-top:76px">
+        <!--左侧边栏-->
+        {% include 'menu.html' %}
+        <!--右边主体开始-->
+        <div class="col-md-9">
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><span class="glyphicon glyphicon-map-marker"></span>&nbsp;修改密码</h3>
+                </div>
+                <div class="panel-body">
+                    <fieldset>
+                        <form id="myform">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="input_newpwd">
+                                    <span class="glyphicon glyphicon-lock"></span>&nbsp;输入新密码</label>
+                                <input id="input_newpwd" class="form-control" placeholder="输入新密码" name="new_password"
+                                       type="password" autofocus>
+                                <span class="errors pull-right" style="color:palevioletred" id="error1"></span>
+                            </div>
+                            {#                        <div class="col-md-12" id="error_newpwd"></div>#}
+                            <div class="form-group">
+                                <label for="input_conpwd">
+                                    <span class="glyphicon glyphicon-lock"></span>&nbsp;确认新密码</label>
+                                {#                            <span class="errors" style="color: palevioletred" id="id_error"></span>#}
+
+                                <input id="input_conpwd" class="form-control" placeholder="再次输入密码"
+                                       name="confirm_password"
+                                       type="password" autofocus>
+                                <span class="errors pull-right" style="color:palevioletred" id="error2"></span>
+                            </div>
+                            <div class="errors" id="id_error" style="color: palevioletred"></div>
+                        </form>
+                        <button class="btn btn-lg btn-success btn-block" id="submit-btn">修改密码</button>
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(document).ready(function () {
+            $('#m-2').addClass('active')
+        });
+
+        //ajax发送数据
+        $('#submit-btn').click(function () {
+            let new_password = $('#input_newpwd').val();
+            let confirm_password = $('#input_conpwd').val();
+            $.ajax({
+                url: '',
+                type: 'post',
+                data: {
+                    new_password,
+                    confirm_password,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                },
+                success: function (data) {
+                    if (data.code == 100) {
+                        location.href = data.url  // 如果成功跳转到登录界面
+                    } else {
+                        //console.log(data.msg);
+                        if (data.msg.new_password) {
+                            $('#error1').html(data.msg.new_password[0]).parent().addClass('has-error')
+                        }
+                        if (data.msg.confirm_password) {
+                            $('#error2').html(data.msg.confirm_password[0]).parent().addClass('has-error')
+
+                        }
+
+                    }
+                }
+            });
+            $('input').focus(function () {
+                $(this).next().html('').parent().removeClass('has-error')
+            });
+
+        })
+    </script>
+{% endblock %}

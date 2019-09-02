@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>注册啦</title>
+    <link rel="stylesheet" href="{% static 'base/css/bootstrap-3.3.7.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/register.css' %}">
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+    <script src="{% static 'base/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'base/js/jQuery-3.4.1.js' %}"></script>
+    <script src="{% static 'jQuery-webcam-master/jquery.webcam.min.js' %}"></script>
+
+    <style type="text/css">
+        #video {
+            border: 1px solid #666666;
+            width: 277px;
+            height: 240px;
+        }
+
+        #canvas {
+            border: 1px solid #666666;
+            width: 277px;
+            height: 240px;
+        }
+    </style>
+
+</head>
+<body style="background: #e5f2fb">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <h3 class="text-center">用户注册</h3>
+            <hr>
+
+            <form id="myform">
+                {% csrf_token %}
+                <!--用myform组件进行渲染校验-->
+                {% for form in register_form %}
+                    <div class="form-group">
+                        <label for="{{ form.auto_id }}">{{ form.label }}</label>
+                        {{ form }}
+                        <span class="errors pull-right" style="color:palevioletred"></span>
+                    </div>
+                {% endfor %}
+
+                <div class="reg_selsex" id="sexRegion">性别：
+                    <span class="checkend male" value="male">
+                            <i data-sex="2" data-selector="sex" class="reg_checkbox" id="male"></i>男
+                            <em class="ico_male"></em>
+                        </span>
+                    <span class="checkend female" value="female">
+                            <i data-sex="2" data-selector="sex" class="reg_checkbox on" id="female"></i>女
+                            <em class="ico_female"></em>
+                        </span>
+                    <span id="sexErrorMsg" style="color: darkred"></span>
+                </div>
+                <hr>
+
+
+                <!--人脸注册开始-->
+                <div id="contentHolder">
+                    <!--标签定义视频，比如电影片段或其他视频流-->
+                    <video id="video" width="270" height="320" autoplay style="border-radius: 50px"></video>
+                    &emsp;&emsp;&emsp;
+                    <!--标签定义图形，比如图表和其他图像,标签只是图形容器，您必须使用脚本来绘制图形-->
+                    <canvas id="canvas" width="270" height="320" name="imagecontent" style="border-radius: 50px"></canvas>
+                    &emsp;&emsp;
+                    <button type="button" id="start" class="btn btn-success">开启摄像头</button>
+                    <span style="margin-left: 60px"></span>
+                    <button type="button" id="picture" class="btn btn-warning">拍照</button>
+                    <span style="margin-left: 150px"></span>
+{#                                        <button type="button" id="sc" class="btn btn-info">上传图片</button>#}
+                    <button type="button" id="stop" class="btn btn-danger">关闭摄像头重新拍</button>
+                </div>
+                <!--人脸注册结束-->
+            </form>
+            <hr>
+            <button type="button" class="btn btn-info" id="id_submit" style="margin-left: 250px;margin-bottom: 100px">
+                注册
+            </button>
+        </div>
+    </div>
+</div>
+</body>
+
+<script>
+    // 实现选择性别按钮的切换
+    $('.checkend').click(function () {
+        $(this).children('i').addClass('on');  // 找到当前标签对象checkend中子标签为i的标签，在类属性中添加on
+        $(this).siblings().children('i').removeClass('on');  // 找到当前标签对象checkend中兄弟标签span的子标签为i的标签，删除类属性中的on
+    });
+
+    // 点击开始按钮，开启摄像头
+    $('#start').click(() => {
+        navigator.getUserMedia = navigator.getUserMedia ||
+            navigator.webkitGetUserMedia ||
+            navigator.mozGetUserMedia;
+        if (navigator.getUserMedia) {
+            navigator.getUserMedia({audio: true, video: {width: 320, height: 320}},
+                function (stream) {
+                    mediaStreamTrack = typeof stream.stop === 'function' ? stream : stream.getTracks()[1];
+                    // video.src = (window.URL || window.webkitURL).createObjectURL(stream);
+                    // video.play();
+
+                    // 将摄像头内容放在视频标签中
+                    var video = document.getElementById("video");
+                    //将视频流转化为video的源
+                    video.srcObject = stream;
+                    try {
+                        this.srcObject = stream;
+                    } catch (error) {
+                        this.src = window.URL.createObjectURL(stream);
+                    }
+                    video.src = (window.URL || window.webkitURL).createObjectURL(stream);
+                    video.onloadedmetadata = function (e) {
+                        console.log('nihao44eee4aaaaddda');
+                        video.play();
+                    };
+                },
+                function (err) {
+                    console.log("The following error occurred: " + err.name);
+                }
+            );
+        } else {
+            console.log("getUserMedia not supported");
+        }
+    });
+
+    // 点击结束按钮，关闭摄像头
+     $('#stop').click(() => {
+        mediaStreamTrack && mediaStreamTrack.stop();
+     });
+
+    // 点击拍照按钮进行拍照
+    $('#picture').click(() => {
+        var context = document.getElementById("canvas").getContext("2d");
+        context.drawImage(video, 0, 0, 270, 320);
+     });
+
+    // 对图像进行编码
+    function getBase64Image(img) {
+        var canvastemp = document.createElement("canvas");
+        canvastemp.width = img.width;
+        canvastemp.height = img.height;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        var dataURL = canvas.toDataURL("image/png");
+        return dataURL
+        // return dataURL.replace("data:image/png;base64,", "");
+     }
+
+    // 注册逻辑
+    $('#id_submit').click(function () {  // 提交按钮上传数据
+        // val()是获得标签中的值
+        // attr()是获得标签中的属性值：attr(attribute,value) 其中attribute是规定属性的名称，规定属性的值
+        let username = $('input[name="username"]').val();
+        let password = $('input[name="password"]').val();
+        let confirm_password = $('input[name="confirm_password"]').val();
+        let email = $('input[name="email"]').val();
+        let phone = $('input[name="phone"]').val();
+        let gender = $('.reg_checkbox.on').parent().attr('value');
+        let info = $('#sexErrorMsg');
+
+        var imgData = document.getElementById("canvas").toDataURL("image/png");
+        // 图片编码
+        var mmmd = getBase64Image(document.getElementById("canvas"));
+        var data = imgData.substr(22);
+        console.log(mmmd);  // 带头data:image/png;base64,iVBO
+        console.log(data);  // 不带头，只有编码iVBORw0KGgoAAAANSUhEUgAAAQ4AAAF
+        console.log(gender, username, password, confirm_password, email, phone);  // 控制台打印查看
+
+        $.ajax({  // 利用ajax传输数据
+            url: '',  // 将数据上传到register页面
+            type: 'post',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                // 由于键值相等，所以可以简写为相同的名字
+                username,
+                password,
+                confirm_password,
+                email,
+                phone,
+                gender,
+                'imagecontent': data,
+            },
+            success: function (data) {  // 回调函数，成功的情况下
+                if (data.code == 100) {   // 如果返回的数据的编码为100,则表示注册成功
+                    info.html(data.msg);  // 相应信息标签中打印注册成功
+                    location.href = data.url  // 跳转到登录页面
+                } else {  // 反之如果是其他编码
+                    $.each(data.msg, function (index, obj) {  /* 遍历处理data.msg，可以是数组、DOM、json等，取决于直接给定或者ajax返回的类型function (index, value)中index是当前元素的位置，value是值。*/
+                        let targetId = '#id_' + index;
+                        $(targetId).next().html(obj[0]).parent().addClass('has-error')  // 如果有错误，相应的框变为红色
+                    })
+                }
+            }
+        });
+        $('input').focus(function () {  // 聚焦事件，当鼠标聚焦到inout框中，是框的颜色不再是红色
+            $(this).next().html('').parent().removeClass('has-error')
+        });
+    });
+
+</script>
+
+</html>

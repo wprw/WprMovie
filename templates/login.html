@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>用户登录</title>
+    <link rel="stylesheet" href="{% static 'base/css/bootstrap-3.3.7.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/register.css' %}">
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+    <script src="{% static 'base/js/bootstrap.min.js' %}"></script>
+
+</head>
+
+
+<body style="background: #e5f2fb">
+<div>
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <h3 class="text-center">用户登录</h3>
+            <hr>
+            <form id="myform">
+                {% csrf_token %}
+                {% for form in login_form %}
+                    <div class="form-group">
+                        <label for="{{ form.auto_id }}">{{ form.label }}</label>
+                        {{ form }}
+                        <span class="errors pull-right" style="color:palevioletred"></span>
+                    </div>
+                {% endfor %}
+
+                {#                <div class="form-group">#}
+                {#                    <label for="id_username">用户名</label>#}
+                {#                    <input type="text" name="username" id="id_username" class="form-control">#}
+                {#                </div>#}
+                {#                <div class="form-group">#}
+                {#                    <label for="id_password">密码</label>#}
+                {#                    <input type="password" name="password" id="id_password" class="form-control">#}
+                {#                </div>#}
+
+            </form>
+            <!--验证码部分-->
+            <div class="form-group">
+                <label for="id_code">验证码</label>
+                <a href="/slide_login/" style="color: cornflowerblue" class="pull-right">不想输验证码？那就试试滑动验证码</a>
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="text" name="code" id="id_code" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <!--重开一个路由给验证码-->
+                        <img src="/get_code/" alt="" width="310" height="35" id="id_img">
+                    </div>
+                </div>
+            </div>
+            <button class="btn bg-success" id="id_button">登录</button>
+            <span class="errors" style="color: palevioletred" id="id_error"></span>
+            <a href="{% url 'register' %}">没有账号?去注册...</a>
+            <a href="/face_login/" style="color: palevioletred" class="pull-right">忘记密码了？试试人脸识别登录吧</a>
+
+        </div>
+
+
+    </div>
+</div>
+</body>
+
+<script>
+    // 每点击一下验证码图片就可以进行切换
+    $('#id_img').click(function () {
+        // 获取图片src原路径
+        let oldPath = $(this).attr('src');  // attr 获得src属性
+        // 修改图片的src属性
+        $(this).attr('src', oldPath += '?')
+    });
+
+    // ajax发送数据
+    $('#id_button').click(function () {
+        // 获取图片src原路径
+        let oldPath = $('#id_img').attr('src');  // attr 获得src属性
+        // 浏览器会自动转换成input框
+        let username = $('#id_username').val();
+        let password = $('#id_password').val();
+        let code = $('#id_code').val();
+        $.ajax({
+            url: '',
+            type: 'post',
+            data: {
+                username,  // val表示取值，发送到服务器的数据，将自动转换为请求字符串格式
+                password,
+                code,
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+            },
+            success: function (data) {
+                if (data.code == 100) {
+                    location.href = data.url  // 刷新页面
+                } else {
+                    $('#id_error').html(data.msg);
+                    // 修改图片的src属性
+                    $('#id_img').attr('src', oldPath += '?')
+                    $.each(data.msg, function (index, obj) {  /* 遍历处理data.msg，可以是数组、DOM、json等，取决于直接给定或者ajax返回的类型function (index, value)中index是当前元素的位置，value是值。*/
+                        console.log(index, obj);
+                        let targetId = '#id_' + index;
+                        $(targetId).next().html(obj[0]).parent().addClass('has-error')  // 如果有错误，相应的框变为红色
+                    })
+                }
+            }
+        });
+        $('input').focus(function () {  // 聚焦事件，当鼠标聚焦到inout框中，是框的颜色不再是红色
+            $(this).next().html('').parent().removeClass('has-error')
+        });
+    });
+
+</script>
+</html>

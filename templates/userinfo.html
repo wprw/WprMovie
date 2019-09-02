@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="container">
+        <!--左侧边栏-->
+        {% include 'menu.html' %}
+        <!--右边主体开始-->
+        <div class="col-md-9">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><span class="glyphicon glyphicon-film"></span>&emsp;个人中心</h3>
+                </div>
+                <div class="panel-body">
+                    <form action="" role="form" method="post" id="myform" enctype="multipart/form-data">
+                        <fieldset>
+                            <div class="form-group">
+                                <label for="input_name"><span class="glyphicon glyphicon-user"></span>&emsp;昵称</label>
+                                <input type="text" id="input_name" class="form-control" placeholder="你的昵称" name="name"
+                                       autofocus value="{{ request.user.name }}">
+                            </div>
+                            <div class="col-md-12" id="error_name"></div>
+                            <div class="form-group">
+                                <label for="input_email"><span
+                                        class="glyphicon glyphicon-envelope"></span>&emsp;邮箱</label>
+                                <input type="text" id="input_email" class="form-control" placeholder="你的邮箱" name="email"
+                                       autofocus value="{{ request.user.email }}">
+                            </div>
+                            <div class="col-md-12" id="error_email"></div>
+                            <div class="form-group">
+                                <label for="input_phone"><span
+                                        class="glyphicon glyphicon-phone"></span>&emsp;手机号码</label>
+                                <input type="text" id="input_phone" class="form-control" placeholder="你的手机" name="phone"
+                                       autofocus value="{{ request.user.phone }}">
+                            </div>
+                            <div class="col-md-12" id="error_phone"></div>
+
+                            <div class="form-group">
+                                <label for="input_photo">
+                                    <span class="glyphicon glyphicon-camera"></span>&emsp;头像
+                                    <img src="/media/{{ request.user.image }}" alt="" class="img-responsive img-rounded"
+                                         id="id_img">
+                                </label>
+                                <input type="file" id="input_photo" class="form-control" name="photo" autofocus
+                                       style="display: none">
+{#                                                                <a class="btn btn-info" style="margin-top:6px;">#}
+{#                                                                    <div class="glyphicon glyphicon-open"></div>&nbsp;上传头像#}
+{#                                                                </a>#}
+                            </div>
+
+                            <!--
+                            <div class="form-group">
+                                <label for="input_face"><span
+                                        class="glyphicon glyphicon-picture"></span>&nbsp;头像</label>
+                                <img style="width: 200px;" src="/media/{{ request.user.image }}"
+                                     class="img-responsive img-rounded">
+                                <a class="btn btn-primary" style="margin-top:6px;"><span
+                                        class="glyphicon glyphicon-open"></span>&nbsp;上传头像</a>
+                                <input id="input_face" class="form-control" name="face" type="file" autofocus style="display: none">
+                            </div>
+                            -->
+
+                            <div class="col-md-12" id="error_photo"></div>
+                            <div class="form-group">
+                                <label for="input_info"><span
+                                        class="glyphicon glyphicon-edit"></span>&emsp;简介</label>
+                                <textarea name="info" id="input_info" rows="10"
+                                          class="form-control">{{ request.user.info }}</textarea>
+                            </div>
+                            <div class="col-md-12" id="error_info"></div>
+                            <button type="submit" class="btn btn-lg btn-success" name="submit-btn" id="id_submit">保存修改
+                            </button>
+                        </fieldset>
+                        {% csrf_token %}
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!--右边主体结束-->
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+
+        $(document).ready(function () {
+            $('#m-1').addClass("active")
+        });
+
+
+        // 提交文件
+        $('#input_photo').change(function () {
+            //alert('111');
+            // 先获取用户上传的文件对象
+            let fileObj = this.files[0];
+            // 生成一个内置对象
+            let fileReader = new FileReader();
+            // 将文件对象传递给内置对象
+            fileReader.readAsDataURL(fileObj);
+            // 将读取出文件对象替换到img标签
+            // 等待文件阅读器取完再渲染图片
+            fileReader.onload = function () {
+                $('#id_img').attr('src', fileReader.result)
+            }
+        });
+
+        // ajax提交
+        /*
+        $('#id_submit').click(function () {
+            // 生成一个Formdata对象，既可以传文件又可以传普通键值
+            let formData = new FormData();
+            // 往Formdata对象中添加键值
+            $.each($('#myform').serializeArray(), function (index, obj) {
+                formData.append(obj.name, obj.value)
+            });
+            // 手动添加文件数据
+            formData.append('photo', $('#input_photo')[0].files[0]);
+            $.ajax({
+                url: '',
+                type: 'post',
+                data: formData,
+                // 需要指定的两个参数
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    if (data.code == 100) {
+                        console.log('ok')
+                    } else {
+                        $.each(data.msg, function (index, obj) {
+                            let targetId = '#id_' + index;
+                            $(targetId).next().html(obj[0]).parent().addClass('has-error')
+                        })
+                    }
+
+                }
+            })
+        });
+        $('input').focus(function () {
+            $(this).next().html('').parent().removeClass('has-error')
+        })
+*/
+    </script>
+{% endblock %}
+

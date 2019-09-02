@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>人脸识别登录</title>
+    <link rel="stylesheet" href="{% static 'base/css/bootstrap-3.3.7.min.css' %}">
+    {#    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>#}
+    <script src="{% static 'base/js/jQuery-3.4.1.js' %}"></script>
+    <script src="{% static 'jQuery-webcam-master/jquery.webcam.min.js' %}"></script>
+
+    <style type="text/css">
+        #video {
+            border: 1px solid #666666;
+            width: 277px;
+            height: 240px;
+        }
+
+        #canvas {
+            border: 1px solid #666666;
+            width: 277px;
+            height: 240px;
+        }
+    </style>
+
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <h3 class="text-center">人脸登录</h3>
+
+            <hr>
+            <div id="contentHolder" style="text-align: center">
+                <!--标签定义视频，比如电影片段或其他视频流-->
+                <video id="video" width="270" height="320" autoplay style="border-radius: 50px"></video>
+                <!--标签定义图形，比如图表和其他图像,标签只是图形容器，您必须使用脚本来绘制图形-->
+                <canvas id="canvas" width="270" height="320" name="imagecontent" style="border-radius: 50px" hidden></canvas>
+                <br>
+                <button id="start" class="btn btn-success">开启摄像头</button>
+                <button id="stop" class="btn btn-danger">关闭摄像头</button>
+                <br>
+                <br>
+                <button id="login" class="btn btn-info" >登录</button>
+                <span class="errors" style="color: palevioletred" id="id_error"></span>
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+
+
+<!--人脸识别操作开始-->
+<script>
+
+    var mediaStreamTrack;
+    // 点击开始按钮，开启摄像头
+    $('#start').click(() => {
+        navigator.getUserMedia = navigator.getUserMedia ||
+            navigator.webkitGetUserMedia ||
+            navigator.mozGetUserMedia;
+        if (navigator.getUserMedia) {
+            navigator.getUserMedia({audio: true, video: {width: 320, height: 320}},
+                function (stream) {
+                    mediaStreamTrack = typeof stream.stop === 'function' ? stream : stream.getTracks()[1];
+                    // video.src = (window.URL || window.webkitURL).createObjectURL(stream);
+                    // video.play();
+
+                    // 将摄像头内容放在视频标签中
+                    var video = document.getElementById("video");
+                    //将视频流转化为video的源
+                    video.srcObject = stream;
+                    try {
+                        this.srcObject = stream;
+                    } catch (error) {
+                        this.src = window.URL.createObjectURL(stream);
+                    }
+                    video.src = (window.URL || window.webkitURL).createObjectURL(stream);
+                    video.onloadedmetadata = function (e) {
+                        console.log('nihao44eee4aaaaddda');
+                        video.play();
+                    };
+                },
+                function (err) {
+                    console.log("The following error occurred: " + err.name);
+                }
+            );
+        } else {
+            console.log("getUserMedia not supported");
+        }
+    });
+    // 点击结束按钮，关闭摄像头
+    $('#stop').click(() => {
+        mediaStreamTrack && mediaStreamTrack.stop();
+    });
+
+    // 点击登录按钮进行拍照
+    {#$('#login').click(() => {#}
+    {#    var context = document.getElementById("canvas").getContext("2d");#}
+    {#    context.drawImage(video, 0, 0, 270, 320);#}
+    {# });#}
+
+    // 对图像进行编码(后期优化在后端编码解码)
+    function getBase64Image(img) {
+        var canvastemp = document.createElement("canvas");
+        canvastemp.width = img.width;
+        canvastemp.height = img.height;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        var dataURL = canvas.toDataURL("image/png");
+        return dataURL
+        // return dataURL.replace("data:image/png;base64,", "");
+    }
+
+    //点击登录同时完成两件事，拍照并登录
+    $('#login').click(function () {
+        // 拍照
+        let context = document.getElementById("canvas").getContext("2d");
+        context.drawImage(video, 0, 0, 270, 320);
+        let imgData = document.getElementById("canvas").toDataURL("image/png");
+        var mmmd = getBase64Image(document.getElementById("canvas"));
+        var data = imgData.substr(22);
+        console.log(mmmd);  // 带头data:image/png;base64,iVBO
+        console.log(data);  // 不带头，只有编码iVBORw0KGgoAAAANSUhEUgAAAQ4AAAF
+        $.ajax({
+            url: '',
+            type: 'post',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                'imagecontent': mmmd,
+            },
+            success: function (data) {
+                if (data.code == 100) {
+                    location.href = data.url
+                } else {
+                    $('#id_error').html(data.msg);
+                }
+            }
+        })
+    })
+</script>
+<!--人脸识别操作结束-->
+
+
+</html>

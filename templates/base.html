@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>我爬电影养你啊</title>
+    <!--样式-->
+    <link rel="stylesheet" href="{% static 'base/css/bootstrap-3.3.7.min.css' %}">
+    <link rel="stylesheet" href="http://static1.mtime.cn/nodewww/2019051313312/css/common/public.css">
+    <link rel="stylesheet" href="http://static1.mtime.cn/nodewww/2019051313312/css/index/index.css">
+    <!--js脚本-->
+    <script src="{% static 'base/js/jQuery-3.4.1.js' %}"></script>
+    <script src="{% static 'base/js/bootstrap-3.3.7/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'base/js/npm.js' %}"></script>
+    <script src="{% static 'base/js/wow.min.js' %}"></script>
+    <script src="{% static 'base/js/jquery.min.js' %}"></script>
+{#    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>#}
+    {#    <script src="http://static1.mtime.cn/nodewww/2019051313312/js/common/common-index.js"></script>#}
+    <script src="{% static 'js/common-index.js' %}"></script>
+
+    <script>
+        var api_server = "api-data-channel.jx.mtime-prd.com"
+            , extra_api_server = "web.channel.mtime.com"
+            , css_server = "static1.mtime.cn/nodewww"
+            , js_server = "static1.mtime.cn/nodewww"
+            , img_server = "img31.mtime.cn"
+            , img_proxyUrl = "http://img31.mtime.cn/get.ashx"
+            , server = "www.mtime.com"
+            , site_domain = ".mtime.com"
+            , site_domain_cn = ".mtime.cn"
+            , site_server = "www.mtime.com"
+            , rev = "/2019051313312"
+            , MT = "M18";
+    </script>
+
+    <style>
+        .navbar-brand > img {
+            display: inline;
+        }
+    </style>
+
+    {% block css %}
+
+    {% endblock %}
+</head>
+<body>
+
+<!--导航条开始-->
+<nav class="navbar navbar-inverse" style="background-color: #192332">
+    <div class="container-fluid">
+        <!--左侧跑马灯开始-->
+        <div class="navbar-header">
+            <button class="navbar-toggle" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <a class="navbar-brand" href="{% url 'index' %}" style="width: 250px">
+                <marquee behavior="scroll" direction="right">
+                    万佩佩的电影时光
+                </marquee>
+            </a>
+
+        </div>
+        <!--左侧跑马灯结束-->
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <!-- 中间索引开始 -->
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="{% url 'index' %}">首页<span class="sr-only">(current)</span></a></li>
+                <li><a href="#">排行榜</a></li>
+                <li><a href="#">影评</a></li>
+            </ul>
+            <form class="navbar-form navbar-left" action="{% url 'search' %}">
+                <div class="form-group">
+                    <input type="text" name="keywords" class="form-control" placeholder="想看啥">
+                </div>
+                <button type="submit" class="btn btn-default" style="background-color: white">搜索</button>
+            </form>
+            <ul class="nav navbar-nav" style="margin-left: 70px">
+                <li><a href="#"><b style="font-family: Tahoma,Arial;font-size: large">For people who love movies</b></a>
+                </li>
+            </ul>
+            <!-- 中间索引结束 -->
+            <!--右侧登录注册开始-->
+            <ul class="nav navbar-nav navbar-right">
+                <!--如果认证通过则显示用户的信息-->
+                {% if request.user.is_authenticated %}
+                    <li><a href="">{{ request.user.username }}</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                           aria-expanded="false">其他功能<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'users:userinfo' %}">个人中心</a></li>
+                            <li><a href="/logout/">注销</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li><a href="/login/">登录</a></li>
+                    <li><a href="/register/">注册</a></li>
+                {% endif %}
+            </ul>
+            <!--右侧登录注册结束-->
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<!--导航条结束-->
+
+<!--中间主体-->
+<div class="container">
+    {% block content %}
+
+    {% endblock %}
+</div>
+
+
+<!--底部开始-->
+<div class="footout"><span class="topline"></span>
+    <br>
+    <div class="fotlogo">
+        <marquee behavior="scroll" direction="right">
+            <dt><a href="#" title="Mtime时光网">Mtime时光网</a>
+        </marquee>
+        </dt>
+
+        <div class="db_foot"><p>
+            <h1>有任何问题请联系站长 @万佩佩</h1>
+            <span>不知道接不接的站长电话：15151979063   联系邮箱：616130272@qq.com</span><br/><span>上海万佩佩科技有限公司</span>Copyright
+            2006-2019 Mtime.com Inc. All rights reserved.<br/><a href="http://feature.mtime.com/help/icp.htm"
+                                                                 target="_blank">京ICP证050715号</a><a
+                    href="http://feature.mtime.com/help/videolicence.htm" target="_blank"
+                    class="mr12">网络视听许可证0108265号</a><a
+                    href="http://feature.mtime.com/help/network.htm" target="_blank" class="mr12">网络文化经营许可证</a><a
+                    href="http://feature.mtime.com/help/tvlicence.htm" target="_blank"
+                    class="mr12">广播电视节目制作经营许可证(京)字第1435号</a><a
+        </div>
+        <!--底部结束-->
+    </div>
+</div>
+{% block js %}
+
+{% endblock %}
+
+</body>
+</html><!--expire:Thu Jan 01 1970 08:00:00 GMT+0800 (CST)-->
